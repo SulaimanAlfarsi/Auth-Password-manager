@@ -9,6 +9,8 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 
+app.use(express.json()); // allaow use to parse incoming requests with JSON payloads :req.body
+
 
 app.use("/api/auth",authRoutes)
 

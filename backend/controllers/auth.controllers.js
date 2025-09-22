@@ -1,8 +1,8 @@
-import { generateKey } from "crypto";
 import User from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
+import crypto from "crypto";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
-import { sendVerificationEmail, sendWelcomeEmail } from "../mailtrap/emails.js";
+import { sendPasswordResetEmail, sendVerificationEmail, sendWelcomeEmail } from "../mailtrap/emails.js";
 
 export const signup = async (req, res) => {
     const { email ,password, name } = req.body;
@@ -120,3 +120,38 @@ export const logout = async (req, res) => {
     res.clearCookie("token")
     res.status(200).json({success:true, message:"Logged out successfully"});
 };
+
+
+export const forgotPassword = async (req, res) => {
+    const {email} = req.body;
+    try {
+        const user = await User.findOne({email});
+
+        if(!user){
+            return res.status(400).json({success:false, message:"User with this email does not exist"});
+        }
+        // Generate reset token
+        const resetToken = crypto.randomBytes(20).toString("hex");
+        const resetTokenExpiresAt = Date.now() + 1 * 60 * 60 * 1000; // 1 hour from now
+
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpires = resetTokenExpiresAt;
+
+        await user.save();
+
+        // Send email with the reset token 
+        console.log("Sending password reset email to:", user.email);
+        console.log("CLIENT_URL:", process.env.CLIENT_URL);
+        const resetURL = `${process.env.CLIENT_URL || 'http://localhost:3000'}/reset-password/${resetToken}`;
+        console.log("Reset URL:", resetURL);
+        
+        await sendPasswordResetEmail(user.email, resetURL);
+        
+        console.log("Password reset email sent successfully");
+        res.status(200).json({success:true, message:"Password reset email sent"});
+        
+    } catch (error) {
+        console.error("Error in forgotPassword:", error);
+        res.status(400).json({success:false, message:error.message});
+    }
+}

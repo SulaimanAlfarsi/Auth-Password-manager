@@ -1,19 +1,27 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { User, Mail, Lock } from "lucide-react";
+import { User, Mail, Lock, Loader } from "lucide-react";
 import Input from "../components/Input";
 import { Link, useNavigate } from "react-router-dom";
 import PasswordStrengthMeter from "../components/PasswordStrengthMeter";
+import { useAuthStore } from "../store/authStore";
 
 
 const SignUpPage = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const {signup,isLoading,error} = useAuthStore();
   
-  const handleSignUp = (e) => {
+  const handleSignUp = async (e) => {
     e.preventDefault();
-    console.log("Sign up:", { name, email, password });
+    try {
+      await signup(email,password,name);
+      navigate("/verify-email");
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
@@ -50,21 +58,23 @@ const SignUpPage = () => {
              value={password}
              onChange={(e) => setPassword(e.target.value)}
            />
+           {error && <p className='text-red-500 font-semibold text-sm'>{error}</p>}
 
 
           	<PasswordStrengthMeter password={password} />
 
 
            <motion.button
-           className='mt-5 w-full py-3 px-4 bg-[#f38650]  text-white 
+           className='mt-5 w-full py-3 px-4 bg-[#f38650] text-white 
 						font-bold rounded-lg shadow-lg hover:bg-[#EA6601]
 						hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-2
 						 focus:ring-offset-gray-900 transition duration-200'
              whileHover={{ scale: 1.02 }}
 						whileTap={{ scale: 0.98 }}
 						type='submit'
+            disabled={isLoading}
            >
-            Sign Up
+            {isLoading ? <Loader className='w-6 h-6 animate-spin mx-auto' /> : "Sign Up"}
            </motion.button>
 
            

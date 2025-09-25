@@ -1,12 +1,45 @@
-import { useState } from 'react'
+import { use, useEffect, useState } from 'react'
 import FloatingShape from './components/FloatingShape'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes,Navigate } from 'react-router-dom'
 import SignUpPage from './pages/SignUpPage'
 import LoginPage from './pages/LoginPage'
 import EmailVerificationPage from './pages/EmailVerificationPage'
 import { Toaster } from 'react-hot-toast'
+import { useAuthStore } from './store/authStore'
+import HomePage from './pages/HomePage'
+
+
+// protect route that required authentication
+const ProtectRoute = ({children}) => {
+  const {isAuthenticated,user} = useAuthStore();
+  if(!isAuthenticated){
+    return <Navigate to="/login" />
+  }
+  if(!user.isVerified){
+    return <Navigate to="/verify-email" />
+  }
+  return children
+}
+
+// redirect to login page if not authenticated
+const RedirectAuthenticatedUser = ({children}) => {
+  const {isAuthenticated,user} = useAuthStore();
+
+  if(isAuthenticated){
+    return <Navigate to="/" />
+  }
+  return children
+}
 
 function App() {
+  const {isCheckingAuth,checkAuth,isAuthenticated,user} = useAuthStore()
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  console.log("isauthenticated",isAuthenticated);
+  console.log("user",user);
 
   return (
  
@@ -20,13 +53,21 @@ function App() {
 
       <Routes>
         <Route path='/' element={
-          <div className="text-white text-center">
-            <h1 className="text-4xl font-bold mb-4">Welcome to Password Manager</h1>
-            <p className="text-xl">Secure your passwords with us</p>
-          </div>
+          <ProtectRoute>
+            <HomePage/>
+          </ProtectRoute>
         } />
-        <Route path='/signup' element={<SignUpPage/>} />
-        <Route path='/login' element={<LoginPage/>} />
+        <Route path='/signup' element={
+          <RedirectAuthenticatedUser>
+            <SignUpPage/>
+          </RedirectAuthenticatedUser>
+        } />
+        <Route path='/login' element={
+           <RedirectAuthenticatedUser>
+           <LoginPage/>
+         </RedirectAuthenticatedUser>
+          
+          } />
         <Route path='/verify-email' element={<EmailVerificationPage/>} />
         
 

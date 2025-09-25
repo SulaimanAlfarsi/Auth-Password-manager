@@ -192,15 +192,15 @@ const HomePage = () => {
          
         </div>
 
-        {/* Dashboard Tab */}
-        {activeTab === 'dashboard' && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.5 }}
-            className='max-w-md w-full mx-auto p-8 bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-xl shadow-2xl border border-gray-700'
-          >
+         {/* Dashboard Tab */}
+         {activeTab === 'dashboard' && (
+           <motion.div
+             initial={{ opacity: 0, scale: 0.9 }}
+             animate={{ opacity: 1, scale: 1 }}
+             exit={{ opacity: 0, scale: 0.9 }}
+             transition={{ duration: 0.5 }}
+             className='max-w-2xl w-full mx-auto p-8 bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-xl shadow-2xl border border-gray-700'
+           >
             <h2 className='text-3xl font-bold mb-6 text-center bg-gradient-to-r from-[#ec9569] to-[#EA6601] text-transparent bg-clip-text'>
               Dashboard
             </h2>

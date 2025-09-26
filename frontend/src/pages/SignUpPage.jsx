@@ -11,11 +11,40 @@ const SignUpPage = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const navigate = useNavigate();
   const {signup,isLoading,error} = useAuthStore();
+
+  // Password validation function
+  const validatePassword = (pass) => {
+    const criteria = [
+      { label: "At least 6 characters", met: pass.length >= 6 },
+      { label: "Contains uppercase letter", met: /[A-Z]/.test(pass) },
+      { label: "Contains lowercase letter", met: /[a-z]/.test(pass) },
+      { label: "Contains a number", met: /\d/.test(pass) },
+      { label: "Contains special character", met: /[^A-Za-z0-9]/.test(pass) },
+    ];
+
+    const unmetCriteria = criteria.filter(criterion => !criterion.met);
+    return {
+      isValid: unmetCriteria.length === 0,
+      unmetCriteria: unmetCriteria.map(c => c.label)
+    };
+  };
   
   const handleSignUp = async (e) => {
     e.preventDefault();
+    
+    // Validate password before signup
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      setPasswordError(`Password must meet all requirements: ${passwordValidation.unmetCriteria.join(', ')}`);
+      return;
+    }
+
+    // Clear any previous password errors
+    setPasswordError("");
+
     try {
       await signup(email,password,name);
       navigate("/verify-email");
@@ -57,8 +86,15 @@ const SignUpPage = () => {
              type='password'
              placeholder='Password'
              value={password}
-             onChange={(e) => setPassword(e.target.value)}
+             onChange={(e) => {
+               setPassword(e.target.value);
+               // Clear password error when user starts typing
+               if (passwordError) {
+                 setPasswordError("");
+               }
+             }}
            />
+           {passwordError && <p className='text-red-500 font-semibold text-sm'>{passwordError}</p>}
            {error && <p className='text-red-500 font-semibold text-sm'>{error}</p>}
 
 
@@ -69,11 +105,11 @@ const SignUpPage = () => {
            className='mt-5 w-full py-3 px-4 bg-[#f38650] text-white 
 						font-bold rounded-lg shadow-lg hover:bg-[#EA6601]
 						hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-2
-						 focus:ring-offset-gray-900 transition duration-200'
+						 focus:ring-offset-gray-900 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
              whileHover={{ scale: 1.02 }}
 						whileTap={{ scale: 0.98 }}
 						type='submit'
-            disabled={isLoading}
+            disabled={isLoading || !validatePassword(password).isValid}
            >
             {isLoading ? <Loader className='w-6 h-6 animate-spin mx-auto' /> : "Sign Up"}
            </motion.button>

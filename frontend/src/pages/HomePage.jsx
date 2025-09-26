@@ -24,7 +24,7 @@ const HomePage = () => {
   const {user, logout, isLoading, error} = useAuthStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [showPassword, setShowPassword] = useState({});
-  const [activeTab, setActiveTab] = useState('dashboard');
+  // Remove activeTab state since we're merging into one page
   const [showAddModal, setShowAddModal] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [newPassword, setNewPassword] = useState({
@@ -149,227 +149,266 @@ const HomePage = () => {
         className="w-full"
       >
          {/* Header */}
-         <div className="flex items-center justify-between mb-8">
+         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
            <div>
-             <h1 className="text-3xl font-bold bg-gradient-to-r from-[#ec9569] to-[#EA6601] text-transparent bg-clip-text">
+             <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#ec9569] to-[#EA6601] text-transparent bg-clip-text">
                Password Vault
              </h1>
-             <p className="text-gray-300 mt-2 text-lg">Welcome back, {user?.name}</p>
+             <p className="text-gray-300 mt-1 sm:mt-2 text-base sm:text-lg">Welcome back, {user?.name}</p>
            </div>
            <motion.button
              whileHover={{ scale: 1.05 }}
              whileTap={{ scale: 0.95 }}
              onClick={handleLogout}
-             className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-[#ec9569] to-[#EA6601] text-white rounded-lg hover:from-[#EA6601] hover:to-[#d97a42] transition-all"
+             className="flex items-center justify-center space-x-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-[#ec9569] to-[#EA6601] text-white rounded-lg hover:from-[#EA6601] hover:to-[#d97a42] transition-all text-sm sm:text-base"
            >
-             <LogOut className="w-5 h-5" />
+             <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
              <span>Logout</span>
            </motion.button>
          </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex space-x-1 mb-6 bg-gray-800 bg-opacity-50 p-1 rounded-lg">
-          <button
-            onClick={() => setActiveTab('dashboard')}
-            className={`flex-1 py-2 px-4 rounded-md transition-all ${
-              activeTab === 'dashboard'
-                ? 'bg-gradient-to-r from-[#ec9569] to-[#EA6601] text-white'
-                : 'text-gray-300 hover:text-white'
-            }`}
-          >
-            Dashboard
-          </button>
-          <button
-            onClick={() => setActiveTab('vault')}
-            className={`flex-1 py-2 px-4 rounded-md transition-all ${
-              activeTab === 'vault'
-                ? 'bg-gradient-to-r from-[#ec9569] to-[#EA6601] text-white'
-                : 'text-gray-300 hover:text-white'
-            }`}
-          >
-            Password Vault
-          </button>
-         
-        </div>
-
-         {/* Dashboard Tab */}
-         {activeTab === 'dashboard' && (
-    <motion.div
-    initial={{ opacity: 0, scale: 0.9 }}
-    animate={{ opacity: 1, scale: 1 }}
-    exit={{ opacity: 0, scale: 0.9 }}
-    transition={{ duration: 0.5 }}
-             className='max-w-2xl w-full mx-auto p-8 bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-xl shadow-2xl border border-gray-700'
-  >
-            <h2 className='text-3xl font-bold mb-6 text-center bg-gradient-to-r from-[#ec9569] to-[#EA6601] text-transparent bg-clip-text'>
-              Dashboard
-        </h2>
-
-        <div className='space-y-6'>
-        <motion.div
-					className='p-4 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700'
-					initial={{ opacity: 0, y: 20 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ delay: 0.2 }}
-				>
-                <h3 className='text-xl font-semibold text-[#EA6601] mb-3'>Profile Information</h3>
-                <p className='text-gray-300'>Name: {user?.name}</p>
-                <p className='text-gray-300'>Email: {user?.email}</p>
-				</motion.div>
-        <motion.div
-					className='p-4 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700'
-					initial={{ opacity: 0, y: 20 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ delay: 0.4 }}
-				>
-                <h3 className='text-xl font-semibold text-[#EA6601] mb-3'>Account Activity</h3>
-					<p className='text-gray-300'>
-						<span className='font-bold'>Joined: </span>
-                  {user?.createdAt ? new Date(user.createdAt).toLocaleDateString("en-US", {
-							year: "numeric",
-							month: "long",
-							day: "numeric",
-                  }) : 'N/A'}
-					</p>
-					<p className='text-gray-300'>
-						<span className='font-bold'>Last Login: </span>
-                  {user?.lastLogin ? formatDate(user.lastLogin) : 'N/A'}
-					</p>
-				</motion.div>
-        </div>
-
-        <motion.div
-				initial={{ opacity: 0, y: 20 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ delay: 0.6 }}
-              className='mt-6'
-			>
-				<motion.button
-					whileHover={{ scale: 1.05 }}
-					whileTap={{ scale: 0.95 }}
-					onClick={handleLogout}
-                className='w-full py-3 px-4 bg-gradient-to-r from-[#ec9569] to-[#EA6601] text-white 
-              font-bold rounded-lg shadow-lg hover:from-[#EA6601] hover:to-[#d97a42]
-               focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-gray-900'
-				>
-					Logout
-				</motion.button>
-			</motion.div>
-          </motion.div>
-        )}
-
-        {/* Password Vault Tab */}
-        {activeTab === 'vault' && (
-          <div className="space-y-6">
-            {/* Search and Add Button */}
-            <div className="flex items-center space-x-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Search passwords..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-gray-800 bg-opacity-50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-[#EA6601] focus:ring-2 focus:ring-[#EA6601] focus:ring-opacity-20 transition-all"
-                />
+        {/* Main Content - Split Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          {/* Left Side - Password Vault */}
+          <div className="lg:col-span-2 order-1 lg:order-1">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-4 sm:space-y-6"
+            >
+              {/* Password Vault Header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-[#ec9569] to-[#EA6601] text-transparent bg-clip-text">
+                    Password Vault
+                  </h2>
+                  <p className="text-gray-400 mt-1">Manage your saved passwords</p>
+                </div>
               </div>
-               <motion.button
-                 whileHover={{ scale: 1.05 }}
-                 whileTap={{ scale: 0.95 }}
-                 onClick={() => setShowAddModal(true)}
-                 className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-[#ec9569] to-[#EA6601] text-white rounded-lg hover:from-[#EA6601] hover:to-[#d97a42] transition-all"
-               >
-                 <Plus className="w-5 h-5" />
-                 <span>Add Password</span>
-               </motion.button>
-            </div>
 
-            {/* Password List */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredPasswords.map((password, index) => (
-                <motion.div
-                  key={password.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-gray-800 bg-opacity-50 backdrop-blur-xl rounded-xl p-6 border border-gray-700 hover:border-[#EA6601] transition-all"
+              {/* Search and Add Button */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+                  <input
+                    type="text"
+                    placeholder="Search passwords..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-3 bg-gray-800 bg-opacity-50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-[#EA6601] focus:ring-2 focus:ring-[#EA6601] focus:ring-opacity-20 transition-all text-sm sm:text-base"
+                  />
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowAddModal(true)}
+                  className="flex items-center justify-center space-x-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-[#ec9569] to-[#EA6601] text-white rounded-lg hover:from-[#EA6601] hover:to-[#d97a42] transition-all text-sm sm:text-base"
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-gradient-to-r from-[#ec9569] to-[#EA6601] rounded-lg flex items-center justify-center">
-                        <Globe className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-white">{password.name}</h3>
-                        <p className="text-sm text-gray-400">{password.website}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      {password.isFavorite && (
-                        <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                      )}
-                      <button className="p-2 hover:bg-gray-700 rounded-lg transition-colors">
-                        <Edit className="w-4 h-4 text-gray-400" />
-                      </button>
-                      <button className="p-2 hover:bg-gray-700 rounded-lg transition-colors">
-                        <Trash2 className="w-4 h-4 text-red-400" />
-                      </button>
-                    </div>
-                  </div>
+                  <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="hidden sm:inline">Add Password</span>
+                  <span className="sm:hidden">Add</span>
+                </motion.button>
+              </div>
 
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-xs text-gray-400 uppercase tracking-wide">Username</label>
-                      <div className="flex items-center justify-between bg-gray-700 bg-opacity-50 rounded-lg p-2 mt-1">
-                        <span className="text-white text-sm">{password.username}</span>
-                        <button
-                          onClick={() => copyToClipboard(password.username)}
-                          className="p-1 hover:bg-gray-600 rounded transition-colors"
-                        >
-                          <Copy className="w-4 h-4 text-gray-400" />
+              {/* Password List */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-6">
+                {filteredPasswords.map((password, index) => (
+                  <motion.div
+                    key={password.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="bg-gray-800 bg-opacity-50 backdrop-blur-xl rounded-xl p-4 sm:p-6 border border-gray-700 hover:border-[#EA6601] transition-all"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-gradient-to-r from-[#ec9569] to-[#EA6601] rounded-lg flex items-center justify-center">
+                          <Globe className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-white">{password.name}</h3>
+                          <p className="text-sm text-gray-400">{password.website}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <button className="p-2 hover:bg-gray-700 rounded-lg transition-colors">
+                          <Edit className="w-4 h-4 text-gray-400" />
+                        </button>
+                        <button className="p-2 hover:bg-gray-700 rounded-lg transition-colors">
+                          <Trash2 className="w-4 h-4 text-red-400" />
                         </button>
                       </div>
                     </div>
 
-                    <div>
-                      <label className="text-xs text-gray-400 uppercase tracking-wide">Password</label>
-                      <div className="flex items-center justify-between bg-gray-700 bg-opacity-50 rounded-lg p-2 mt-1">
-                        <span className="text-white text-sm font-mono">
-                          {showPassword[password.id] ? password.password : '••••••••••••'}
-                        </span>
-                        <div className="flex items-center space-x-1">
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs text-gray-400 uppercase tracking-wide">Username</label>
+                        <div className="flex items-center justify-between bg-gray-700 bg-opacity-50 rounded-lg p-2 mt-1">
+                          <span className="text-white text-sm">{password.username}</span>
                           <button
-                            onClick={() => togglePasswordVisibility(password.id)}
-                            className="p-1 hover:bg-gray-600 rounded transition-colors"
-                          >
-                            {showPassword[password.id] ? (
-                              <EyeOff className="w-4 h-4 text-gray-400" />
-                            ) : (
-                              <Eye className="w-4 h-4 text-gray-400" />
-                            )}
-                          </button>
-                          <button
-                            onClick={() => copyToClipboard(password.password)}
+                            onClick={() => copyToClipboard(password.username)}
                             className="p-1 hover:bg-gray-600 rounded transition-colors"
                           >
                             <Copy className="w-4 h-4 text-gray-400" />
                           </button>
                         </div>
                       </div>
-                    </div>
 
-                    {password.notes && (
                       <div>
-                        <label className="text-xs text-gray-400 uppercase tracking-wide">Notes</label>
-                        <p className="text-gray-300 text-sm mt-1">{password.notes}</p>
+                        <label className="text-xs text-gray-400 uppercase tracking-wide">Password</label>
+                        <div className="flex items-center justify-between bg-gray-700 bg-opacity-50 rounded-lg p-2 mt-1">
+                          <span className="text-white text-sm font-mono">
+                            {showPassword[password.id] ? password.password : '••••••••••••'}
+                          </span>
+                          <div className="flex items-center space-x-1">
+                            <button
+                              onClick={() => togglePasswordVisibility(password.id)}
+                              className="p-1 hover:bg-gray-600 rounded transition-colors"
+                            >
+                              {showPassword[password.id] ? (
+                                <EyeOff className="w-4 h-4 text-gray-400" />
+                              ) : (
+                                <Eye className="w-4 h-4 text-gray-400" />
+                              )}
+                            </button>
+                            <button
+                              onClick={() => copyToClipboard(password.password)}
+                              className="p-1 hover:bg-gray-600 rounded transition-colors"
+                            >
+                              <Copy className="w-4 h-4 text-gray-400" />
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                    )}
+
+                      {password.notes && (
+                        <div>
+                          <label className="text-xs text-gray-400 uppercase tracking-wide">Notes</label>
+                          <p className="text-gray-300 text-sm mt-1">{password.notes}</p>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Empty State */}
+              {filteredPasswords.length === 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-12"
+                >
+                  <div className="w-24 h-24 bg-gray-800 bg-opacity-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Globe className="w-12 h-12 text-gray-400" />
                   </div>
+                  <h3 className="text-xl font-semibold text-gray-300 mb-2">No passwords found</h3>
+                  <p className="text-gray-400 mb-6">
+                    {searchTerm ? 'Try adjusting your search terms' : 'Start by adding your first password'}
+                  </p>
+                  {!searchTerm && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setShowAddModal(true)}
+                      className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-[#ec9569] to-[#EA6601] text-white rounded-lg hover:from-[#EA6601] hover:to-[#d97a42] transition-all"
+                    >
+                      <Plus className="w-5 h-5" />
+                      <span>Add Your First Password</span>
+                    </motion.button>
+                  )}
                 </motion.div>
-              ))}
-            </div>
+              )}
+            </motion.div>
           </div>
-        )}
+
+          {/* Right Side - Profile */}
+          <div className="lg:col-span-1 order-2 lg:order-2">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              className="bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-xl shadow-2xl border border-gray-700 p-4 sm:p-6 lg:sticky lg:top-6"
+            >
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-[#ec9569] to-[#EA6601] text-transparent bg-clip-text">
+                Profile
+              </h2>
+
+              {/* Profile Information */}
+              <motion.div
+                className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <h3 className="text-base sm:text-lg font-semibold text-[#EA6601] mb-3 sm:mb-4 flex items-center">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#ec9569] to-[#EA6601] rounded-full flex items-center justify-center mr-2 sm:mr-3">
+                    <span className="text-white text-xs sm:text-sm font-bold">
+                      {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                    </span>
+                  </div>
+                  Profile Information
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs text-gray-400 uppercase tracking-wide">Full Name</label>
+                    <p className="text-white font-medium">{user?.name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-400 uppercase tracking-wide">Email Address</label>
+                    <p className="text-white font-medium break-all">{user?.email || 'N/A'}</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Account Activity */}
+              <motion.div
+                className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <h3 className="text-base sm:text-lg font-semibold text-[#EA6601] mb-3 sm:mb-4">Account Activity</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs text-gray-400 uppercase tracking-wide">Member Since</label>
+                    <p className="text-white font-medium">
+                      {user?.createdAt ? new Date(user.createdAt).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      }) : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-400 uppercase tracking-wide">Last Login</label>
+                    <p className="text-white font-medium">
+                      {user?.lastLogin ? formatDate(user.lastLogin) : 'N/A'}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Quick Stats */}
+              <motion.div
+                className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+              >
+                <h3 className="text-base sm:text-lg font-semibold text-[#EA6601] mb-3 sm:mb-4">Quick Stats</h3>
+                <div className="grid grid-cols-1 gap-3 sm:gap-4">
+                  <div className="text-center">
+                    <div className="text-xl sm:text-2xl font-bold text-white">{passwords.length}</div>
+                    <div className="text-xs text-gray-400">Total Passwords</div>
+                  </div>
+                </div>
+              </motion.div>
+
+            </motion.div>
+          </div>
+        </div>
 
        
          {/* Add Password Modal */}

@@ -126,11 +126,17 @@ export const logout = async (req, res) => {
 
 export const forgotPassword = async (req, res) => {
     const {email} = req.body;
+    
+    // Validate email format
+    if (!email || !email.includes('@')) {
+        return res.status(400).json({success:false, message:"Please enter a valid email address"});
+    }
+    
     try {
         const user = await User.findOne({email});
 
         if(!user){
-            return res.status(400).json({success:false, message:"User with this email does not exist"});
+            return res.status(400).json({success:false, message:"No account found with this email address"});
         }
         // Generate reset token
         const resetToken = crypto.randomBytes(20).toString("hex");

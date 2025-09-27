@@ -21,6 +21,7 @@ import {
 import toast from 'react-hot-toast'
 import DeleteConfirmModal from '../components/DeleteConfirmModal'
 import PasswordStrengthMeter from '../components/PasswordStrengthMeter'
+import PasswordGenerator from '../components/PasswordGenerator'
 
 
 const HomePage = () => {
@@ -654,14 +655,20 @@ const HomePage = () => {
                    <label className="block text-sm font-medium text-gray-300 mb-2">
                      Password *
                    </label>
-                   <input
-                     type="text"
-                     value={newPassword.password}
-                     onChange={(e) => setNewPassword(prev => ({ ...prev, password: e.target.value }))}
-                     placeholder="Enter your password"
-                     className="w-full px-4 py-3 bg-gray-700 bg-opacity-50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-[#EA6601] focus:ring-2 focus:ring-[#EA6601] focus:ring-opacity-20 transition-all font-mono"
-                     required
-                   />
+                   <div className="flex space-x-3">
+                     <input
+                       type="text"
+                       value={newPassword.password}
+                       onChange={(e) => setNewPassword(prev => ({ ...prev, password: e.target.value }))}
+                       placeholder="Enter your password"
+                       className="flex-1 px-4 py-3 bg-gray-700 bg-opacity-50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-[#EA6601] focus:ring-2 focus:ring-[#EA6601] focus:ring-opacity-20 transition-all font-mono"
+                       required
+                     />
+                     <PasswordGenerator 
+                       onPasswordGenerated={(password) => setNewPassword(prev => ({ ...prev, password }))}
+                       disabled={isAdding}
+                     />
+                   </div>
                    {newPassword.password && (
                      <PasswordStrengthMeter password={newPassword.password} />
                    )}
@@ -802,14 +809,20 @@ const HomePage = () => {
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Password *
               </label>
-              <input
-                type="text"
-                value={editModal.password.password || ''}
-                onChange={(e) => updateEditPassword('password', e.target.value)}
-                className="w-full px-4 py-3 bg-gray-800 bg-opacity-50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Enter your password"
-                required
-              />
+              <div className="flex space-x-3">
+                <input
+                  type="text"
+                  value={editModal.password.password || ''}
+                  onChange={(e) => updateEditPassword('password', e.target.value)}
+                  className="flex-1 px-4 py-3 bg-gray-800 bg-opacity-50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Enter your password"
+                  required
+                />
+                <PasswordGenerator 
+                  onPasswordGenerated={(password) => updateEditPassword('password', password)}
+                  disabled={editModal.isUpdating || editModal.isLoading}
+                />
+              </div>
               {editModal.password.password && (
                 <PasswordStrengthMeter password={editModal.password.password} />
               )}

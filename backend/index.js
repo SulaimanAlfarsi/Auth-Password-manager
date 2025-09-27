@@ -2,6 +2,7 @@ import express from 'express';
 import { connectDB } from './db/connectDB.js';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.route.js';
+import passwordRoutes from './routes/password.route.js';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 
@@ -20,6 +21,7 @@ app.use(cookieParser()) // to parse cookies from incoming requests
 
 
 app.use("/api/auth",authRoutes)
+app.use("/api/passwords",passwordRoutes)
 
 app.listen(PORT, () => {
     connectDB();

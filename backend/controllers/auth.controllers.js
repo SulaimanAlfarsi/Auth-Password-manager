@@ -99,6 +99,8 @@ export const login = async (req, res) => {
 
         user.lastLogin = Date.now();
         await user.save();
+        
+        console.log('Login successful for user:', user.email);
 
         res.status(200).json({
             success:true,
@@ -191,10 +193,16 @@ export const resetPassword = async (req, res) => {
 
 export const checkAuth = async (req, res) => {
     try {
-        const user = await User.findById(req.user);
+        console.log('checkAuth called, userId:', req.userId);
+        console.log('cookies:', req.cookies);
+        
+        const user = await User.findById(req.userId);
         if(!user){
+            console.log('User not found for userId:', req.userId);
             return res.status(404).json({success:false, message:"User not found"});
         }
+        console.log('User found:', user.email);
+        
         res.status(200).json({
             success:true,
             user:{

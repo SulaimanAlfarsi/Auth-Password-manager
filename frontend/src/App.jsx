@@ -15,12 +15,17 @@ import ResetPasswordPage from './pages/ResetPasswordPage'
 // protect route that required authentication
 const ProtectRoute = ({children}) => {
   const {isAuthenticated,user} = useAuthStore();
+  console.log('ProtectRoute - isAuthenticated:', isAuthenticated, 'user:', user);
+  
   if(!isAuthenticated){
+    console.log('Not authenticated, redirecting to login');
     return <Navigate to="/login" />
   }
-  if(!user.isVerified){
+  if(!user?.isVerified){
+    console.log('User not verified, redirecting to verify-email');
     return <Navigate to="/verify-email" />
   }
+  console.log('User authenticated and verified, rendering children');
   return children
 }
 
@@ -38,10 +43,14 @@ function App() {
   const {isCheckingAuth,checkAuth} = useAuthStore()
 
   useEffect(() => {
+    console.log('App mounted, checking auth...');
     checkAuth();
   }, [checkAuth]);
 
-  if (isCheckingAuth) return <LoadingSpinner/>
+  if (isCheckingAuth) {
+    console.log('Checking auth, showing loading spinner...');
+    return <LoadingSpinner/>
+  }
 
   return (
  

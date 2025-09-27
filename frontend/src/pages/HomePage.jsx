@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAuthStore } from '../store/authStore'
+import { usePasswordStore } from '../store/passwordStore'
 import { formatDate } from '../utils/date'
 import { 
   Plus, 
@@ -18,13 +19,14 @@ import {
   Loader
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import DeleteConfirmModal from '../components/DeleteConfirmModal'
 
 
 const HomePage = () => {
-  const {user, logout, isLoading, error} = useAuthStore();
+  const {user, logout} = useAuthStore();
+  const {passwords, isLoading, error, fetchPasswords, createPassword, deletePassword, clearError} = usePasswordStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [showPassword, setShowPassword] = useState({});
-  // Remove activeTab state since we're merging into one page
   const [showAddModal, setShowAddModal] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [newPassword, setNewPassword] = useState({
@@ -34,50 +36,57 @@ const HomePage = () => {
     website: '',
     notes: ''
   });
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    passwordId: null,
+    passwordName: '',
+    isDeleting: false
+  });
 
-  // Mock password data - in real app, this would come from your backend
-  const [passwords, setPasswords] = useState([
-    {
-      id: 1,
-      name: 'Google Account',
-      username: 'user@gmail.com',
-      password: 'MySecurePassword123!',
-      website: 'https://google.com',
-      notes: 'Main Google account',
-      createdAt: new Date().toISOString(),
-      isFavorite: true
-    },
-    {
-      id: 2,
-      name: 'GitHub',
-      username: 'developer',
-      password: 'GitHubPass456!',
-      website: 'https://github.com',
-      notes: 'Development account',
-      createdAt: new Date().toISOString(),
-      isFavorite: false
-    },
-    {
-      id: 3,
-      name: 'Netflix',
-      username: 'user@email.com',
-      password: 'NetflixPass789!',
-      website: 'https://netflix.com',
-      notes: 'Entertainment subscription',
-      createdAt: new Date().toISOString(),
-      isFavorite: true
+  // Fetch passwords when component mounts
+  useEffect(() => {
+    fetchPasswords();
+  }, [fetchPasswords]);
+
+  // Clear errors when component unmounts
+  useEffect(() => {
+    return () => {
+      clearError();
+    };
+  }, [clearError]);
+
+  // Show error toast if there's an error
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      clearError();
     }
-  ]);
+  }, [error, clearError]);
 
   const handleLogout = async () => {
     logout();
   };
 
-  const togglePasswordVisibility = (id) => {
-    setShowPassword(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
+  const togglePasswordVisibility = async (id) => {
+    if (showPassword[id]) {
+      // Hide password
+      setShowPassword(prev => ({
+        ...prev,
+        [id]: false
+      }));
+    } else {
+      // Show password - need to fetch decrypted password from backend
+      try {
+        const { getPassword } = usePasswordStore.getState();
+        const passwordData = await getPassword(id);
+        setShowPassword(prev => ({
+          ...prev,
+          [id]: passwordData.password
+        }));
+      } catch (error) {
+        toast.error('Failed to decrypt password');
+      }
+    }
   };
 
   const copyToClipboard = (text) => {
@@ -96,20 +105,16 @@ const HomePage = () => {
 
     setIsAdding(true);
     
-    // Simulate API call - in real app, this would save to your backend
-    setTimeout(() => {
-      const newPasswordEntry = {
-        id: passwords.length + 1,
+    try {
+      await createPassword({
         name: newPassword.name,
         username: newPassword.username,
         password: newPassword.password,
         website: newPassword.website,
-        notes: newPassword.notes,
-        createdAt: new Date().toISOString(),
-        isFavorite: false
-      };
+        notes: newPassword.notes
+      });
       
-      setPasswords(prev => [...prev, newPasswordEntry]);
+      // Reset form and close modal
       setNewPassword({
         name: '',
         username: '',
@@ -118,9 +123,12 @@ const HomePage = () => {
         notes: ''
       });
       setShowAddModal(false);
-      setIsAdding(false);
       toast.success('Password saved successfully!');
-    }, 1000);
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to save password');
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   const resetAddForm = () => {
@@ -132,6 +140,48 @@ const HomePage = () => {
       notes: ''
     });
     setShowAddModal(false);
+  };
+
+  const handleDeletePassword = async (id, name) => {
+    setDeleteModal({
+      isOpen: true,
+      passwordId: id,
+      passwordName: name,
+      isDeleting: false
+    });
+  };
+
+  const confirmDelete = async () => {
+    setDeleteModal(prev => ({ ...prev, isDeleting: true }));
+    
+    try {
+      await deletePassword(deleteModal.passwordId);
+      toast.success('Password deleted successfully!');
+      // Clear any shown passwords for this item
+      setShowPassword(prev => {
+        const newState = { ...prev };
+        delete newState[deleteModal.passwordId];
+        return newState;
+      });
+    } catch (error) {
+      toast.error('Failed to delete password');
+    } finally {
+      setDeleteModal({
+        isOpen: false,
+        passwordId: null,
+        passwordName: '',
+        isDeleting: false
+      });
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteModal({
+      isOpen: false,
+      passwordId: null,
+      passwordName: '',
+      isDeleting: false
+    });
   };
 
   const filteredPasswords = passwords.filter(password =>
@@ -152,7 +202,7 @@ const HomePage = () => {
          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
            <div>
              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#ec9569] to-[#EA6601] text-transparent bg-clip-text">
-               Password Vault
+               Password Manager
              </h1>
              <p className="text-gray-300 mt-1 sm:mt-2 text-base sm:text-lg">Welcome back, {user?.name}</p>
            </div>
@@ -171,10 +221,10 @@ const HomePage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Left Side - Password Vault */}
           <div className="lg:col-span-2 order-1 lg:order-1">
-            <motion.div
+    <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
+    transition={{ duration: 0.5 }}
               className="space-y-4 sm:space-y-6"
             >
               {/* Password Vault Header */}
@@ -212,13 +262,19 @@ const HomePage = () => {
               </div>
 
               {/* Password List */}
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-6">
-                {filteredPasswords.map((password, index) => (
-                  <motion.div
-                    key={password.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
+              {isLoading && passwords.length === 0 ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader className="w-8 h-8 animate-spin text-[#EA6601]" />
+                  <span className="ml-2 text-gray-300">Loading passwords...</span>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-6">
+                  {filteredPasswords.map((password, index) => (
+                    <motion.div
+                      key={password._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
                     className="bg-gray-800 bg-opacity-50 backdrop-blur-xl rounded-xl p-4 sm:p-6 border border-gray-700 hover:border-[#EA6601] transition-all"
                   >
                     <div className="flex items-start justify-between mb-4">
@@ -235,7 +291,10 @@ const HomePage = () => {
                         <button className="p-2 hover:bg-gray-700 rounded-lg transition-colors">
                           <Edit className="w-4 h-4 text-gray-400" />
                         </button>
-                        <button className="p-2 hover:bg-gray-700 rounded-lg transition-colors">
+                        <button 
+                          onClick={() => handleDeletePassword(password._id, password.name)}
+                          className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                        >
                           <Trash2 className="w-4 h-4 text-red-400" />
                         </button>
                       </div>
@@ -259,21 +318,21 @@ const HomePage = () => {
                         <label className="text-xs text-gray-400 uppercase tracking-wide">Password</label>
                         <div className="flex items-center justify-between bg-gray-700 bg-opacity-50 rounded-lg p-2 mt-1">
                           <span className="text-white text-sm font-mono">
-                            {showPassword[password.id] ? password.password : '••••••••••••'}
+                            {showPassword[password._id] ? showPassword[password._id] : '••••••••••••'}
                           </span>
                           <div className="flex items-center space-x-1">
                             <button
-                              onClick={() => togglePasswordVisibility(password.id)}
+                              onClick={() => togglePasswordVisibility(password._id)}
                               className="p-1 hover:bg-gray-600 rounded transition-colors"
                             >
-                              {showPassword[password.id] ? (
+                              {showPassword[password._id] ? (
                                 <EyeOff className="w-4 h-4 text-gray-400" />
                               ) : (
                                 <Eye className="w-4 h-4 text-gray-400" />
                               )}
                             </button>
                             <button
-                              onClick={() => copyToClipboard(password.password)}
+                              onClick={() => copyToClipboard(showPassword[password._id] || '••••••••••••')}
                               className="p-1 hover:bg-gray-600 rounded transition-colors"
                             >
                               <Copy className="w-4 h-4 text-gray-400" />
@@ -289,12 +348,13 @@ const HomePage = () => {
                         </div>
                       )}
                     </div>
-                  </motion.div>
-                ))}
-              </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
 
               {/* Empty State */}
-              {filteredPasswords.length === 0 && (
+              {!isLoading && filteredPasswords.length === 0 && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -333,15 +393,15 @@ const HomePage = () => {
             >
               <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-[#ec9569] to-[#EA6601] text-transparent bg-clip-text">
                 Profile
-              </h2>
+        </h2>
 
               {/* Profile Information */}
-              <motion.div
+        <motion.div
                 className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ delay: 0.2 }}
+				>
                 <h3 className="text-base sm:text-lg font-semibold text-[#EA6601] mb-3 sm:mb-4 flex items-center">
                   <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#ec9569] to-[#EA6601] rounded-full flex items-center justify-center mr-2 sm:mr-3">
                     <span className="text-white text-xs sm:text-sm font-bold">
@@ -360,24 +420,24 @@ const HomePage = () => {
                     <p className="text-white font-medium break-all">{user?.email || 'N/A'}</p>
                   </div>
                 </div>
-              </motion.div>
+				</motion.div>
 
               {/* Account Activity */}
-              <motion.div
+        <motion.div
                 className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ delay: 0.4 }}
+				>
                 <h3 className="text-base sm:text-lg font-semibold text-[#EA6601] mb-3 sm:mb-4">Account Activity</h3>
                 <div className="space-y-3">
                   <div>
                     <label className="text-xs text-gray-400 uppercase tracking-wide">Member Since</label>
                     <p className="text-white font-medium">
                       {user?.createdAt ? new Date(user.createdAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
+							year: "numeric",
+							month: "long",
+							day: "numeric",
                       }) : 'N/A'}
                     </p>
                   </div>
@@ -388,14 +448,14 @@ const HomePage = () => {
                     </p>
                   </div>
                 </div>
-              </motion.div>
+				</motion.div>
 
               {/* Quick Stats */}
-              <motion.div
+        <motion.div
                 className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
+				initial={{ opacity: 0, y: 20 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ delay: 0.6 }}
               >
                 <h3 className="text-base sm:text-lg font-semibold text-[#EA6601] mb-3 sm:mb-4">Quick Stats</h3>
                 <div className="grid grid-cols-1 gap-3 sm:gap-4">
@@ -404,21 +464,21 @@ const HomePage = () => {
                     <div className="text-xs text-gray-400">Total Passwords</div>
                   </div>
                 </div>
-              </motion.div>
-
-            </motion.div>
+			</motion.div>
+    
+    </motion.div>
           </div>
         </div>
 
        
          {/* Add Password Modal */}
          {showAddModal && (
-           <div className="fixed inset-0 bg-gray-900 bg-opacity-30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+           <div className="fixed inset-0 bg-gradient-to-br from-gray-900 via-[#042C46] to-[#975433] bg-opacity-95 backdrop-blur-sm flex items-center justify-center p-4 z-50">
              <motion.div
                initial={{ opacity: 0, scale: 0.9 }}
                animate={{ opacity: 1, scale: 1 }}
                exit={{ opacity: 0, scale: 0.9 }}
-               className="bg-gray-800 bg-opacity-90 backdrop-blur-xl rounded-xl p-8 w-full max-w-2xl border border-gray-700"
+               className="bg-gray-900 bg-opacity-60 backdrop-blur-xl rounded-xl p-8 w-full max-w-2xl border border-gray-700"
              >
                <div className="flex items-center justify-between mb-6">
                  <h2 className="text-2xl font-bold text-white">Add New Password</h2>
@@ -529,14 +589,24 @@ const HomePage = () => {
                          <span>Save Password</span>
                        </>
                      )}
-                   </motion.button>
-                 </div>
-               </form>
-             </motion.div>
-           </div>
-         )}
-    </motion.div>
-     </div>
+              </motion.button>
+            </div>
+          </form>
+        </motion.div>
+      </div>
+    )}
+
+    {/* Delete Confirmation Modal */}
+    <DeleteConfirmModal
+      isOpen={deleteModal.isOpen}
+      onClose={cancelDelete}
+      onConfirm={confirmDelete}
+      itemName={deleteModal.passwordName}
+      itemType="password"
+      isLoading={deleteModal.isDeleting}
+    />
+  </motion.div>
+</div>
   )
 }
 

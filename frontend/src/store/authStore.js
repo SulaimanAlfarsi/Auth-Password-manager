@@ -44,6 +44,10 @@ export const useAuthStore = create ((set)=> ({
         try {
             await axios.post(`${API_URL}/logout`);
             set({user:null,isAuthenticated:false,isLoading:false,error:null});
+            
+            // Clear passwords from password store
+            const { usePasswordStore } = await import('./passwordStore.js');
+            usePasswordStore.getState().clearPasswords();
         } catch (error) {
             set({error:"Error while logging out",isLoading:false});
             throw error;
@@ -68,6 +72,7 @@ export const useAuthStore = create ((set)=> ({
             const response = await axios.get(`${API_URL}/check-auth`);
             set({user:response.data.user,isAuthenticated:true,isCheckingAuth:false});
         } catch (error) {
+            console.log('Auth check failed:', error.response?.data?.message || error.message);
             set({error:null,isCheckingAuth:false,isAuthenticated:false});
         } 
     },

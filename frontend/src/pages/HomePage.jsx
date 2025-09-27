@@ -20,11 +20,12 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import DeleteConfirmModal from '../components/DeleteConfirmModal'
+import PasswordStrengthMeter from '../components/PasswordStrengthMeter'
 
 
 const HomePage = () => {
   const {user, logout} = useAuthStore();
-  const {passwords, isLoading, error, fetchPasswords, createPassword, deletePassword, clearError} = usePasswordStore();
+  const {passwords, isLoading, error, fetchPasswords, createPassword, deletePassword, updatePassword, getPassword, clearError} = usePasswordStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [showPassword, setShowPassword] = useState({});
   const [showAddModal, setShowAddModal] = useState(false);
@@ -41,6 +42,12 @@ const HomePage = () => {
     passwordId: null,
     passwordName: '',
     isDeleting: false
+  });
+  const [editModal, setEditModal] = useState({
+    isOpen: false,
+    password: null,
+    isUpdating: false,
+    isLoading: false
   });
 
   // Fetch passwords when component mounts
@@ -100,6 +107,13 @@ const HomePage = () => {
     
     if (!newPassword.name || !newPassword.username || !newPassword.password) {
       toast.error('Please fill in all required fields');
+      return;
+    }
+
+    // Validate password strength
+    const passwordValidation = validatePassword(newPassword.password);
+    if (!passwordValidation.isValid) {
+      toast.error('Please create a stronger password that meets all security requirements');
       return;
     }
 
@@ -182,6 +196,105 @@ const HomePage = () => {
       passwordName: '',
       isDeleting: false
     });
+  };
+
+  const handleEditPassword = async (password) => {
+    setEditModal({
+      isOpen: true,
+      password: null,
+      isUpdating: false,
+      isLoading: true
+    });
+    
+    try {
+      // Fetch the decrypted password
+      const passwordWithDecrypted = await getPassword(password._id);
+      setEditModal({
+        isOpen: true,
+        password: passwordWithDecrypted,
+        isUpdating: false,
+        isLoading: false
+      });
+    } catch (error) {
+      toast.error('Failed to load password details');
+      console.error('Error fetching password:', error);
+      setEditModal({
+        isOpen: false,
+        password: null,
+        isUpdating: false,
+        isLoading: false
+      });
+    }
+  };
+
+  const handleUpdatePassword = async (e) => {
+    e.preventDefault();
+    
+    // Validate password strength
+    const passwordValidation = validatePassword(editModal.password.password);
+    if (!passwordValidation.isValid) {
+      toast.error('Please create a stronger password that meets all security requirements');
+      return;
+    }
+    
+    setEditModal(prev => ({ ...prev, isUpdating: true }));
+    
+    try {
+      await updatePassword(editModal.password._id, editModal.password);
+      toast.success('Password updated successfully!');
+      setEditModal({
+        isOpen: false,
+        password: null,
+        isUpdating: false,
+        isLoading: false
+      });
+    } catch (error) {
+      toast.error('Failed to update password');
+    } finally {
+      setEditModal(prev => ({ ...prev, isUpdating: false }));
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditModal({
+      isOpen: false,
+      password: null,
+      isUpdating: false,
+      isLoading: false
+    });
+  };
+
+  const updateEditPassword = (field, value) => {
+    setEditModal(prev => ({
+      ...prev,
+      password: {
+        ...prev.password,
+        [field]: value
+      }
+    }));
+  };
+
+  const validatePassword = (password) => {
+    if (!password) {
+      return {
+        isValid: false,
+        strength: 0,
+        criteria: [false, false, false, false, false]
+      };
+    }
+    
+    const criteria = [
+      password.length >= 6,
+      /[A-Z]/.test(password),
+      /[a-z]/.test(password),
+      /\d/.test(password),
+      /[^A-Za-z0-9]/.test(password)
+    ];
+    return {
+      isValid: criteria.every(Boolean),
+      strength: criteria.filter(Boolean).length,
+      criteria
+    };
   };
 
   const filteredPasswords = passwords.filter(password =>
@@ -288,7 +401,10 @@ const HomePage = () => {
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <button className="p-2 hover:bg-gray-700 rounded-lg transition-colors">
+                        <button 
+                          onClick={() => handleEditPassword(password)}
+                          className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                        >
                           <Edit className="w-4 h-4 text-gray-400" />
                         </button>
                         <button 
@@ -546,6 +662,9 @@ const HomePage = () => {
                      className="w-full px-4 py-3 bg-gray-700 bg-opacity-50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-[#EA6601] focus:ring-2 focus:ring-[#EA6601] focus:ring-opacity-20 transition-all font-mono"
                      required
                    />
+                   {newPassword.password && (
+                     <PasswordStrengthMeter password={newPassword.password} />
+                   )}
                  </div>
 
                  <div>
@@ -575,8 +694,8 @@ const HomePage = () => {
                      type="submit"
                      whileHover={{ scale: 1.02 }}
                      whileTap={{ scale: 0.98 }}
-                     disabled={isAdding}
-                     className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-[#ec9569] to-[#EA6601] text-white rounded-lg hover:from-[#EA6601] hover:to-[#d97a42] transition-all disabled:opacity-50"
+                     disabled={isAdding || !validatePassword(newPassword.password).isValid}
+                     className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-[#ec9569] to-[#EA6601] text-white rounded-lg hover:from-[#EA6601] hover:to-[#d97a42] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                    >
                      {isAdding ? (
                        <>
@@ -605,6 +724,159 @@ const HomePage = () => {
       itemType="password"
       isLoading={deleteModal.isDeleting}
     />
+
+    {/* Edit Password Modal */}
+    {editModal.isOpen && (
+      <div className="fixed inset-0 bg-gradient-to-br from-gray-900 via-[#042C46] to-[#975433] bg-opacity-95 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          className="bg-gray-900 bg-opacity-60 backdrop-blur-xl rounded-xl p-8 w-full max-w-2xl border border-gray-700"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-white">Edit Password</h2>
+            <button
+              onClick={cancelEdit}
+              className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+              disabled={editModal.isLoading}
+            >
+              <X className="w-5 h-5 text-gray-400" />
+            </button>
+          </div>
+
+          {editModal.isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <Loader className="w-8 h-8 animate-spin text-green-500 mx-auto mb-4" />
+                <p className="text-gray-300">Loading password details...</p>
+              </div>
+            </div>
+          ) : editModal.password ? (
+
+          <form onSubmit={handleUpdatePassword} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Website/Service Name *
+                </label>
+                <input
+                  type="text"
+                  value={editModal.password.name}
+                  onChange={(e) => updateEditPassword('name', e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-800 bg-opacity-50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="e.g., Google, Netflix"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Website URL
+                </label>
+                <input
+                  type="url"
+                  value={editModal.password.website || ''}
+                  onChange={(e) => updateEditPassword('website', e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-800 bg-opacity-50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="https://example.com"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Username/Email *
+              </label>
+              <input
+                type="text"
+                value={editModal.password.username}
+                onChange={(e) => updateEditPassword('username', e.target.value)}
+                className="w-full px-4 py-3 bg-gray-800 bg-opacity-50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="your.email@example.com"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Password *
+              </label>
+              <input
+                type="text"
+                value={editModal.password.password || ''}
+                onChange={(e) => updateEditPassword('password', e.target.value)}
+                className="w-full px-4 py-3 bg-gray-800 bg-opacity-50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="Enter your password"
+                required
+              />
+              {editModal.password.password && (
+                <PasswordStrengthMeter password={editModal.password.password} />
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Notes (Optional)
+              </label>
+              <textarea
+                value={editModal.password.notes || ''}
+                onChange={(e) => updateEditPassword('notes', e.target.value)}
+                rows={3}
+                className="w-full px-4 py-3 bg-gray-800 bg-opacity-50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                placeholder="Additional notes..."
+              />
+            </div>
+
+            <div className="flex space-x-4 pt-4">
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={cancelEdit}
+                disabled={editModal.isUpdating}
+                className="flex-1 py-3 px-6 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </motion.button>
+              
+              <motion.button
+                type="submit"
+                whileHover={{ scale: editModal.isUpdating ? 1 : 1.02 }}
+                whileTap={{ scale: editModal.isUpdating ? 1 : 0.98 }}
+                disabled={editModal.isUpdating || !validatePassword(editModal.password.password).isValid}
+                className="flex-1 py-3 px-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              >
+                {editModal.isUpdating ? (
+                  <>
+                    <Loader className="w-4 h-4 animate-spin" />
+                    <span>Updating...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    <span>Update Password</span>
+                  </>
+                )}
+              </motion.button>
+            </div>
+          </form>
+          ) : (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <p className="text-red-400">Failed to load password details</p>
+                <button
+                  onClick={cancelEdit}
+                  className="mt-4 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
+        </motion.div>
+      </div>
+    )}
   </motion.div>
 </div>
   )

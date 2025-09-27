@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/badge/Nodemailer-Email-red.svg" alt="Email">
 </p>
 
-![Demo App](/frontend/public/demo.mp4)
+![Demo App](https://github.com/SulaimanAlfarsi/Auth-Password-manager/blob/main/frontend/public/demo.mp4?raw=true)
 
 
 ## 🎯 About This Project
@@ -99,18 +99,31 @@ This is a **comprehensive Password Manager application** built with modern web t
 ## 📱 Screenshots
 
 ### Authentication Pages
-- **Login Page**: Clean design with gradient backgrounds
-- **Signup Page**: Password strength validation with real-time feedback
-- **Email Verification**: Secure verification process
-- **Forgot Password**: User-friendly error handling and success states
-- **Reset Password**: Secure password reset with validation
+
+#### Login Page
+![Login Page](https://github.com/SulaimanAlfarsi/Auth-Password-manager/blob/main/frontend/public/login.png?raw=true)
+*Clean design with gradient backgrounds and smooth animations*
+
+#### Signup Page
+![Signup Page](https://github.com/SulaimanAlfarsi/Auth-Password-manager/blob/main/frontend/public/signup.png?raw=true)
+*Password strength validation with real-time feedback and visual indicators*
+
+#### Forgot Password Page
+![Forgot Password Page](https://github.com/SulaimanAlfarsi/Auth-Password-manager/blob/main/frontend/public/forgot-password.png?raw=true)
+*User-friendly error handling and success states with beautiful UI*
+
+![Forgot Password Success](https://github.com/SulaimanAlfarsi/Auth-Password-manager/blob/main/frontend/public/forgot-password1.png?raw=true)
+*Success state with confirmation message*
 
 ### Dashboard & Password Management
-- **Home Dashboard**: Overview with profile and password vault
-- **Add Password Modal**: Beautiful form with password generator
-- **Edit Password Modal**: Full editing capabilities with validation
-- **Delete Confirmation**: Elegant modal with loading states
-- **Password Generator**: Dropdown with strength options
+
+#### Home Dashboard
+![Home Dashboard](https://github.com/SulaimanAlfarsi/Auth-Password-manager/blob/main/frontend/public/home.png?raw=true)
+*Overview with profile and password vault in a modern layout*
+
+#### Add Password Modal
+![Add Password Modal](https://github.com/SulaimanAlfarsi/Auth-Password-manager/blob/main/frontend/public/addpass.png?raw=true)
+*Beautiful form with password generator and strength validation*
 
 ## 🚀 Installation
 

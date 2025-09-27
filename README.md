@@ -12,9 +12,12 @@
 
 ## 🎥 Demo Video
 
-[![Watch the Demo](https://img.shields.io/badge/▶️_Watch_Demo_Video-blue?style=for-the-badge)](https://github.com/SulaimanAlfarsi/Auth-Password-manager/blob/main/frontend/public/demo.mp4?raw=true)
+<video width="100%" controls>
+  <source src="https://github.com/SulaimanAlfarsi/Auth-Password-manager/blob/main/frontend/public/demo.mp4?raw=true" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-*Click the button above to watch the demo video*
+*Watch the demo video above to see the application in action*
 
 
 ## 🎯 About This Project

@@ -12,19 +12,6 @@
 
 ![Demo App](/frontend/public/demo.mp4)
 
-## 📋 Table of Contents
-
-- [About This Project](#about-this-project)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Screenshots](#screenshots)
-- [Installation](#installation)
-- [Environment Variables](#environment-variables)
-- [Usage](#usage)
-- [API Endpoints](#api-endpoints)
-- [Security Features](#security-features)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## 🎯 About This Project
 
@@ -274,22 +261,7 @@ The application will be available at:
 - **Secure Headers** and CORS policies
 - **Environment Variable Protection**
 
-## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
-
-### Development Setup
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Code Style
-- Follow ESLint configuration
-- Use meaningful commit messages
-- Add comments for complex logic
-- Test your changes thoroughly
 
 
 ## 🙏 Acknowledgments

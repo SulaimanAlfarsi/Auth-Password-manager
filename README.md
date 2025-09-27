@@ -10,7 +10,11 @@
   <img src="https://img.shields.io/badge/Nodemailer-Email-red.svg" alt="Email">
 </p>
 
-![Demo App](https://github.com/SulaimanAlfarsi/Auth-Password-manager/blob/main/frontend/public/demo.mp4?raw=true)
+## 🎥 Demo Video
+
+[![Watch the Demo](https://img.shields.io/badge/▶️_Watch_Demo_Video-blue?style=for-the-badge)](https://github.com/SulaimanAlfarsi/Auth-Password-manager/blob/main/frontend/public/demo.mp4?raw=true)
+
+*Click the button above to watch the demo video*
 
 
 ## 🎯 About This Project

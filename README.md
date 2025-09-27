@@ -12,12 +12,9 @@
 
 ## 🎥 Demo Video
 
-<video width="100%" controls>
-  <source src="https://github.com/SulaimanAlfarsi/Auth-Password-manager/blob/main/frontend/public/demo.mp4?raw=true" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+[![Demo Video](https://img.shields.io/badge/📹_Watch_Demo_Video-red?style=for-the-badge&logo=youtube)](https://github.com/SulaimanAlfarsi/Auth-Password-manager/blob/main/frontend/public/demo.mp4?raw=true)
 
-*Watch the demo video above to see the application in action*
+> **📺 Demo Video**: [Click here to watch the demo video](https://github.com/SulaimanAlfarsi/Auth-Password-manager/blob/main/frontend/public/demo.mp4?raw=true) showing the complete application in action
 
 
 ## 🎯 About This Project
@@ -139,13 +136,7 @@ This is a **comprehensive Password Manager application** built with modern web t
 - MongoDB (local or cloud instance)
 - Gmail account for email functionality
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/SulaimanAlfarsi/Auth-Password-manager.git
-cd Auth-Password-manager
-```
-
-### 2. Install Dependencies
+### 1. Install Dependencies
 ```bash
 # Install backend dependencies
 npm install
@@ -156,7 +147,7 @@ npm install
 cd ..
 ```
 
-### 3. Setup Environment Variables
+### 2. Setup Environment Variables
 
 Create a `.env` file in the root directory:
 
@@ -182,7 +173,7 @@ ENCRYPTION_KEY=your-32-character-encryption-key-here
 CLIENT_URL=http://localhost:5173
 ```
 
-### 4. Gmail Setup (for Email Functionality)
+### 3. Gmail Setup (for Email Functionality)
 
 1. **Enable 2-Factor Authentication** on your Gmail account
 2. **Generate App Password**:
@@ -191,7 +182,7 @@ CLIENT_URL=http://localhost:5173
    - Generate password for "Mail"
    - Use this password as `GMAIL_PASS`
 
-### 5. Run the Application
+### 4. Run the Application
 
 ```bash
 # Start backend server
